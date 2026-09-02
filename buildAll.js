@@ -977,7 +977,11 @@ export default {
 };
 `;
   fs.writeFileSync(path.join(__dirname, '_worker.js'), workerJs);
-  fs.writeFileSync(path.join(__dirname, 'public', '_worker.js'), workerJs);
+  // Ensure public/_worker.js does not exist as an asset
+  const publicWorkerPath = path.join(__dirname, 'public', '_worker.js');
+  if (fs.existsSync(publicWorkerPath)) {
+    fs.unlinkSync(publicWorkerPath);
+  }
 
   // 3. Generate self-contained public/app.js
   const appJsTemplate = `/**
@@ -1826,7 +1830,7 @@ window.addEventListener('DOMContentLoaded', initializeApp);
   fs.writeFileSync(path.join(__dirname, 'public', 'app.js'), appJsTemplate);
 
   // 4. Generate wrangler.toml for Cloudflare Workers & Assets
-  const wranglerToml = `name = "chatbot-project"
+  const wranglerToml = `name = "chatbot-project-2"
 main = "_worker.js"
 compatibility_date = "2024-09-01"
 
