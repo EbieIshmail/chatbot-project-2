@@ -141,7 +141,8 @@ app.get('/api/files', (req, res) => {
       orderBy = `f.last_opened ${order === 'asc' ? 'ASC' : 'DESC'}`;
     }
 
-    const files = db.getFilesWithTags(whereClause, params, orderBy, 200);
+    const limit = req.query.limit !== undefined ? parseInt(req.query.limit) : 5000;
+    const files = db.getFilesWithTags(whereClause, params, orderBy, limit);
     res.json({ files, count: files.length });
   } catch (err) {
     res.status(500).json({ error: err.message });

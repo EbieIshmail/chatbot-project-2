@@ -1003,7 +1003,9 @@ const state = {
   stats: null,
   schema: null,
   viewMode: 'cards', // 'cards' | 'table'
-  chatHistory: []
+  chatHistory: [],
+  currentPage: 1,
+  pageSize: 48
 };
 
 // DOM Elements
@@ -1039,6 +1041,9 @@ const elements = {
   tableBody: document.getElementById('explorer-table-body'),
   viewCardsBtn: document.getElementById('view-cards-btn'),
   viewTableBtn: document.getElementById('view-table-btn'),
+  paginationBar: document.getElementById('explorer-pagination'),
+  paginationInfo: document.getElementById('pagination-info'),
+  paginationControls: document.getElementById('pagination-controls'),
 
   // Analytics Tab
   kpiFiles: document.getElementById('kpi-files'),
@@ -1339,7 +1344,7 @@ function addWelcomeMessage() {
       <div class="message-body">
         <div class="message-card">
           <p>Hello! I am your <strong>Personal Archive SQL Assistant</strong>.</p>
-          <p style="margin-top: 6px;">I have loaded <strong>51 files</strong> and <strong>10 tags</strong> from <code>personal_archive_sqlserver.sql</code>. You can ask me to search, filter, calculate sizes, find tagged documents, or analyze your records in plain English!</p>
+          <p style="margin-top: 6px;">I have loaded <strong>\${state.files && state.files.length ? state.files.length.toLocaleString() : '3,051'} files</strong> and <strong>\${state.tags ? state.tags.length : '10'} tags</strong> from <code>personal_archive_sqlserver.sql</code>. You can ask me to search, filter, calculate sizes, find tagged documents, or analyze your records in plain English!</p>
         </div>
       </div>
     </div>
@@ -1552,12 +1557,21 @@ function applyExplorerFilters() {
     return a.id - b.id;
   });
 
+  state.currentPage = 1;
   renderExplorerFiles();
 }
 
 function renderExplorerFiles() {
   const count = state.filteredFiles.length;
-  elements.resultsCount.textContent = 'Showing ' + count + ' of ' + state.files.length + ' files';
+  elements.resultsCount.textContent = 'Showing ' + count.toLocaleString() + ' of ' + state.files.length.toLocaleString() + ' files';
+
+  const totalPages = Math.max(1, Math.ceil(count / state.pageSize));
+  if (state.currentPage > totalPages) state.currentPage = totalPages;
+  if (state.currentPage < 1) state.currentPage = 1;
+
+  const startIndex = (state.currentPage - 1) * state.pageSize;
+  const endIndex = Math.min(startIndex + state.pageSize, count);
+  const pageFiles = state.filteredFiles.slice(startIndex, endIndex);
 
   // 1. Render Cards
   elements.cardsContainer.innerHTML = '';
@@ -1569,7 +1583,7 @@ function renderExplorerFiles() {
       </div>
     \`;
   } else {
-    state.filteredFiles.forEach(file => {
+    pageFiles.forEach(file => {
       const card = document.createElement('div');
       card.className = 'file-card';
       card.onclick = () => openFileModal(file);
@@ -1598,7 +1612,7 @@ function renderExplorerFiles() {
 
   // 2. Render Table
   elements.tableBody.innerHTML = '';
-  state.filteredFiles.forEach(file => {
+  pageFiles.forEach(file => {
     const tr = document.createElement('tr');
     tr.onclick = () => openFileModal(file);
     const starText = file.is_starred ? '⭐' : '';
@@ -1617,6 +1631,87 @@ function renderExplorerFiles() {
     \`;
     elements.tableBody.appendChild(tr);
   });
+
+  // 3. Render Pagination Controls
+  renderPagination(count, totalPages, startIndex, endIndex);
+}
+
+function renderPagination(totalCount, totalPages, startIndex, endIndex) {
+  if (!elements.paginationBar) return;
+
+  if (totalCount === 0) {
+    elements.paginationBar.style.display = 'none';
+    return;
+  }
+  elements.paginationBar.style.display = 'flex';
+
+  if (elements.paginationInfo) {
+    elements.paginationInfo.textContent = 'Showing files ' + (startIndex + 1).toLocaleString() + ' - ' + endIndex.toLocaleString() + ' of ' + totalCount.toLocaleString() + ' (Page ' + state.currentPage + ' of ' + totalPages + ')';
+  }
+
+  if (!elements.paginationControls) return;
+  elements.paginationControls.innerHTML = '';
+
+  if (totalPages <= 1) return;
+
+  // Previous button
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'page-btn';
+  prevBtn.innerHTML = '&laquo; Prev';
+  prevBtn.disabled = state.currentPage === 1;
+  prevBtn.onclick = () => {
+    if (state.currentPage > 1) {
+      state.currentPage--;
+      renderExplorerFiles();
+      window.scrollTo({ top: elements.cardsContainer.offsetTop - 100, behavior: 'smooth' });
+    }
+  };
+  elements.paginationControls.appendChild(prevBtn);
+
+  // Page numbers list with ellipsis
+  const pagesToShow = [];
+  pagesToShow.push(1);
+  for (let p = Math.max(2, state.currentPage - 2); p <= Math.min(totalPages - 1, state.currentPage + 2); p++) {
+    pagesToShow.push(p);
+  }
+  if (totalPages > 1 && !pagesToShow.includes(totalPages)) {
+    pagesToShow.push(totalPages);
+  }
+
+  let lastP = 0;
+  pagesToShow.forEach(p => {
+    if (lastP && p - lastP > 1) {
+      const ell = document.createElement('span');
+      ell.className = 'page-ellipsis';
+      ell.textContent = '...';
+      elements.paginationControls.appendChild(ell);
+    }
+
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (p === state.currentPage ? ' active' : '');
+    btn.textContent = p;
+    btn.onclick = () => {
+      state.currentPage = p;
+      renderExplorerFiles();
+      window.scrollTo({ top: elements.cardsContainer.offsetTop - 100, behavior: 'smooth' });
+    };
+    elements.paginationControls.appendChild(btn);
+    lastP = p;
+  });
+
+  // Next button
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'page-btn';
+  nextBtn.innerHTML = 'Next &raquo;';
+  nextBtn.disabled = state.currentPage === totalPages;
+  nextBtn.onclick = () => {
+    if (state.currentPage < totalPages) {
+      state.currentPage++;
+      renderExplorerFiles();
+      window.scrollTo({ top: elements.cardsContainer.offsetTop - 100, behavior: 'smooth' });
+    }
+  };
+  elements.paginationControls.appendChild(nextBtn);
 }
 
 function openFileModal(file) {
