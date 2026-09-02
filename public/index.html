@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Archive AI Chatbot & Database Explorer</title>
+  <meta name="description" content="AI Chatbot and Interactive Explorer for personal_archive_sqlserver.sql database with natural language querying and SQL studio.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <h2>ArchiveAI</h2>
+            <span class="badge-sub">SQL Bot</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DB STATUS CHIP -->
+      <div class="db-source-card">
+        <div class="db-source-header">
+          <span class="status-dot pulsing"></span>
+          <span class="source-label">Active Source</span>
+        </div>
+        <div class="source-filename" title="personal_archive_sqlserver.sql">
+          <code>personal_archive_sqlserver.sql</code>
+        </div>
+        <div class="source-meta">
+          <span><strong id="sidebar-total-files">51</strong> Files</span>
+          <span>•</span>
+          <span><strong id="sidebar-total-size">79.8 MB</strong></span>
+        </div>
+      </div>
+
+      <!-- NAVIGATION -->
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="chat-tab" id="nav-chat">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>AI Chatbot</span>
+        </button>
+
+        <button class="nav-item" data-tab="explorer-tab" id="nav-explorer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Archive Explorer</span>
+        </button>
+
+        <button class="nav-item" data-tab="analytics-tab" id="nav-analytics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Analytics & Stats</span>
+        </button>
+
+        <button class="nav-item" data-tab="studio-tab" id="nav-studio">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          <span>SQL Studio</span>
+        </button>
+      </nav>
+
+      <!-- SIDEBAR STATS SUMMARY -->
+      <div class="sidebar-footer">
+        <div class="quick-stat-row">
+          <span>⭐ Starred</span>
+          <span id="sidebar-starred-count" class="stat-highlight">8</span>
+        </div>
+        <div class="quick-stat-row">
+          <span>🏷️ Tags</span>
+          <span id="sidebar-tags-count" class="stat-highlight">10</span>
+        </div>
+        <div class="quick-stat-row">
+          <span>📁 Categories</span>
+          <span id="sidebar-cat-count" class="stat-highlight">12</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      
+      <!-- TAB 1: AI CHATBOT -->
+      <section id="chat-tab" class="tab-content active">
+        <header class="tab-header">
+          <div class="header-titles">
+            <h1>Personal Archive AI Assistant</h1>
+            <p>Ask anything about your files, tags, sizes, categories, and documents in natural language.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-secondary btn-sm" id="btn-clear-chat" title="Clear conversation history">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Clear Chat</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- CHAT AREA -->
+        <div class="chat-container">
+          <!-- QUICK SUGGESTIONS -->
+          <div class="suggestions-bar">
+            <span class="suggestion-label">Suggested Prompts:</span>
+            <div class="suggestion-chips" id="suggestion-chips">
+              <button class="chip" data-prompt="Show me all confidential documents">🔒 Confidential Files</button>
+              <button class="chip" data-prompt="Which files are larger than 2MB?">💾 Files > 2MB</button>
+              <button class="chip" data-prompt="List all invoices from 2024">🧾 Invoices 2024</button>
+              <button class="chip" data-prompt="Show all starred files">⭐ Starred Items</button>
+              <button class="chip" data-prompt="Give me a storage breakdown by category">📊 Storage Breakdown</button>
+              <button class="chip" data-prompt="Which files have never been opened?">📂 Never Opened</button>
+              <button class="chip" data-prompt="Show files tagged as urgent or renew-soon">⚡ Urgent & Renewals</button>
+              <button class="chip" data-prompt="Find my laptop receipt and warranty">💻 Laptop Receipt & Warranty</button>
+            </div>
+          </div>
+
+          <!-- MESSAGES CONTAINER -->
+          <div class="messages-list" id="chat-messages">
+            <!-- Welcome message injected by JS -->
+          </div>
+
+          <!-- INPUT FORM -->
+          <div class="chat-input-wrapper">
+            <form id="chat-form" class="chat-input-form">
+              <div class="input-glow-box">
+                <textarea 
+                  id="chat-input" 
+                  rows="1" 
+                  placeholder="Ask a question about personal_archive_sqlserver.sql (e.g., 'Show all confidential files', 'Total storage of photos')..." 
+                  required
+                ></textarea>
+                <button type="submit" id="btn-send-chat" class="btn-send" title="Send message">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                </button>
+              </div>
+            </form>
+            <div class="input-hint">
+              <span>Press <strong>Enter</strong> to send, <strong>Shift + Enter</strong> for new line • Powered by SQLite SQL Engine</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ARCHIVE EXPLORER -->
+      <section id="explorer-tab" class="tab-content">
+        <header class="tab-header">
+          <div class="header-titles">
+            <h1>Archive Explorer</h1>
+            <p>Search, filter, and inspect all 51 records loaded from <code>personal_archive_sqlserver.sql</code></p>
+          </div>
+          <div class="header-actions">
+            <div class="view-toggle">
+              <button class="toggle-btn active" id="view-cards-btn" title="Grid Card View">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+              <button class="toggle-btn" id="view-table-btn" title="Table View">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- FILTERS TOOLBAR -->
+        <div class="explorer-toolbar">
+          <div class="search-input-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="explorer-search" placeholder="Search by filename, description, path...">
+          </div>
+
+          <div class="filter-controls">
+            <select id="filter-category" class="select-dropdown">
+              <option value="">All Categories (12)</option>
+            </select>
+
+            <select id="filter-tag" class="select-dropdown">
+              <option value="">All Tags (10)</option>
+            </select>
+
+            <select id="filter-type" class="select-dropdown">
+              <option value="">All Types (PDF, JPG, ...)</option>
+            </select>
+
+            <select id="sort-files" class="select-dropdown">
+              <option value="id-asc">ID (Default)</option>
+              <option value="size-desc">Size (Largest First)</option>
+              <option value="size-asc">Size (Smallest First)</option>
+              <option value="date-desc">Created Date (Newest)</option>
+              <option value="date-asc">Created Date (Oldest)</option>
+              <option value="name-asc">Name (A - Z)</option>
+            </select>
+
+            <label class="checkbox-label" title="Show only starred files">
+              <input type="checkbox" id="filter-starred">
+              <span>⭐ Starred Only</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="results-count-bar">
+          <span id="explorer-results-count">Showing 51 of 51 files</span>
+        </div>
+
+        <!-- EXPLORER CONTENT CONTAINER -->
+        <div id="explorer-cards-container" class="cards-grid">
+          <!-- Dynamic cards rendered here -->
+        </div>
+
+        <div id="explorer-table-container" class="table-view-wrapper hidden">
+          <table class="data-table" id="explorer-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>⭐</th>
+                <th>Filename</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Folder</th>
+                <th>Created</th>
+                <th>Tags</th>
+              </tr>
+            </thead>
+            <tbody id="explorer-table-body">
+              <!-- Dynamic rows rendered here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 3: ANALYTICS & STATS -->
+      <section id="analytics-tab" class="tab-content">
+        <header class="tab-header">
+          <div class="header-titles">
+            <h1>Archive Analytics & Visual Breakdown</h1>
+            <p>Storage usage, category distributions, file types, and tag trends.</p>
+          </div>
+        </header>
+
+        <div class="analytics-grid">
+          <!-- KPI ROW -->
+          <div class="kpi-card">
+            <div class="kpi-icon icon-blue">📁</div>
+            <div class="kpi-data">
+              <span class="kpi-value" id="kpi-files">51</span>
+              <span class="kpi-label">Total Files</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon icon-purple">💾</div>
+            <div class="kpi-data">
+              <span class="kpi-value" id="kpi-storage">79.82 MB</span>
+              <span class="kpi-label">Storage Allocated</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon icon-yellow">⭐</div>
+            <div class="kpi-data">
+              <span class="kpi-value" id="kpi-starred">8</span>
+              <span class="kpi-label">Starred Items</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon icon-green">🏷️</div>
+            <div class="kpi-data">
+              <span class="kpi-value" id="kpi-tags">10</span>
+              <span class="kpi-label">Unique Tags</span>
+            </div>
+          </div>
+
+          <!-- CATEGORY BREAKDOWN -->
+          <div class="analytics-card col-span-2">
+            <div class="card-title-row">
+              <h3>📁 Storage & Count by Category</h3>
+              <span class="card-badge">12 Categories</span>
+            </div>
+            <div class="chart-bars-list" id="category-chart-list">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- FILE TYPE BREAKDOWN -->
+          <div class="analytics-card">
+            <div class="card-title-row">
+              <h3>📄 File Type Distribution</h3>
+            </div>
+            <div class="file-type-list" id="file-type-chart-list">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- TAGS CLOUD -->
+          <div class="analytics-card">
+            <div class="card-title-row">
+              <h3>🏷️ Tag Frequency & Relationships</h3>
+            </div>
+            <div class="tag-cloud-container" id="tag-cloud-list">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: SQL STUDIO -->
+      <section id="studio-tab" class="tab-content">
+        <header class="tab-header">
+          <div class="header-titles">
+            <h1>SQL Studio Console</h1>
+            <p>Execute custom SQL queries directly on <code>personal_archive_sqlserver.sql</code> database.</p>
+          </div>
+        </header>
+
+        <div class="studio-layout">
+          <!-- SCHEMA SIDEBAR -->
+          <div class="schema-panel">
+            <div class="schema-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+              </svg>
+              <span>Database Schema</span>
+            </div>
+            <div class="schema-tree" id="schema-tree">
+              <!-- Rendered by JS -->
+            </div>
+
+            <div class="quick-queries-section">
+              <span class="quick-q-title">Sample Queries:</span>
+              <button class="quick-q-btn" data-sql="SELECT f.filename, f.category, f.size_kb, GROUP_CONCAT(t.name, ', ') AS tags FROM files f LEFT JOIN file_tags ft ON f.id = ft.file_id LEFT JOIN tags t ON ft.tag_id = t.id GROUP BY f.id ORDER BY f.size_kb DESC LIMIT 10;">Top 10 Largest Files with Tags</button>
+              <button class="quick-q-btn" data-sql="SELECT category, COUNT(*) as count, SUM(size_kb) as total_size, AVG(size_kb) as avg_size FROM files GROUP BY category ORDER BY count DESC;">Category Aggregations</button>
+              <button class="quick-q-btn" data-sql="SELECT f.filename, f.folder, t.name as tag FROM files f JOIN file_tags ft ON f.id = ft.file_id JOIN tags t ON ft.tag_id = t.id WHERE t.name = 'urgent';">All Urgent Files</button>
+              <button class="quick-q-btn" data-sql="SELECT * FROM files WHERE is_starred = 1;">Starred Files</button>
+            </div>
+          </div>
+
+          <!-- EDITOR & RESULTS -->
+          <div class="editor-panel">
+            <div class="editor-toolbar">
+              <span class="editor-label">SQL Query Editor</span>
+              <div class="editor-buttons">
+                <button class="btn-secondary btn-sm" id="btn-format-sql">Format</button>
+                <button class="btn-primary btn-sm" id="btn-run-sql">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                  <span>Run Query (Ctrl + Enter)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="editor-container">
+              <textarea id="sql-editor" rows="6" spellcheck="false">SELECT 
+  f.id, 
+  f.filename, 
+  f.category, 
+  f.file_type, 
+  f.size_kb, 
+  f.is_starred,
+  GROUP_CONCAT(t.name, ', ') AS tags
+FROM files f
+LEFT JOIN file_tags ft ON f.id = ft.file_id
+LEFT JOIN tags t ON ft.tag_id = t.id
+GROUP BY f.id
+ORDER BY f.id ASC
+LIMIT 20;</textarea>
+            </div>
+
+            <!-- SQL RESULT AREA -->
+            <div class="query-results-box">
+              <div class="results-header">
+                <span id="query-meta-status">Ready to execute query</span>
+                <button class="btn-secondary btn-xs hidden" id="btn-export-sql">Export CSV</button>
+              </div>
+              <div class="results-table-scroll" id="studio-results-table">
+                <!-- Result table rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- FILE DETAILS MODAL -->
+  <div class="modal-backdrop hidden" id="file-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="file-type-badge" id="modal-type">PDF</span>
+          <h3 id="modal-filename">Filename.pdf</h3>
+        </div>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="modal-field">
+            <label>Category</label>
+            <span id="modal-category" class="badge-category">Tax</span>
+          </div>
+          <div class="modal-field">
+            <label>File Size</label>
+            <span id="modal-size">1.7 MB</span>
+          </div>
+          <div class="modal-field">
+            <label>Folder Location</label>
+            <span id="modal-folder" class="code-pill">/Documents/Taxes</span>
+          </div>
+          <div class="modal-field">
+            <label>Starred</label>
+            <span id="modal-starred">⭐ Yes</span>
+          </div>
+          <div class="modal-field">
+            <label>Date Created</label>
+            <span id="modal-created">2024-01-17</span>
+          </div>
+          <div class="modal-field">
+            <label>Date Modified</label>
+            <span id="modal-modified">2024-01-24</span>
+          </div>
+          <div class="modal-field col-span-2">
+            <label>Last Opened</label>
+            <span id="modal-opened">Never opened</span>
+          </div>
+          <div class="modal-field col-span-2">
+            <label>Tags</label>
+            <div id="modal-tags" class="tags-container"></div>
+          </div>
+          <div class="modal-field col-span-2">
+            <label>Description</label>
+            <p id="modal-description" class="modal-desc-text">Description goes here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js"></script>
+  <script src="dbClient.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
